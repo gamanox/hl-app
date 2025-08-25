@@ -1,12 +1,16 @@
 # CNC Service Management App
 
-React Native app built with Expo for managing CNC wood machine services, work orders, and technician scheduling.
+React Native app built with Expo for managing CNC wood machine services, work orders, and technician scheduling with role-based access control.
 
 ## 🚀 Quick Start
 
 \`\`\`bash
 # Install dependencies
 npm install
+
+# Copy environment variables
+cp .env.example .env
+# Edit .env with your actual values
 
 # Start development server
 npm start
@@ -22,6 +26,29 @@ npm run web
 - **Mobile**: iOS and Android via Expo Go or development builds
 - **Web**: Progressive Web App with full functionality
 - **Desktop**: Web app can be installed as PWA
+
+## 👥 User Roles & Features
+
+### **Admin Dashboard**
+- Global work order overview and analytics
+- User management (customers, technicians, machines)
+- QuickBooks integration and sync management
+- Document generation and approval workflows
+- System settings and role management
+
+### **Technician Portal**
+- Assigned work order backlog
+- Session tracking with geofencing
+- Photo capture and notes
+- Parts catalog and usage tracking
+- Calendar view of scheduled appointments
+
+### **Client Portal**
+- Service request creation
+- Order status tracking
+- Document signing (quotes, purchase orders)
+- Service history and invoices
+- Public portal access via secure links
 
 ## 🌐 Web Deployment
 
@@ -103,16 +130,78 @@ The app expects these QuickBooks integration endpoints to be deployed separately
 - `POST /api/qb/webhook` - Handle QuickBooks webhooks
 - `POST /api/qb/invoice` - Create invoice from work order
 
-## 📋 Features
+## 📋 Core Features
 
-- **Authentication**: OTP-based login with Supabase
-- **Work Orders**: Create, manage, and track service requests
-- **Sessions**: Time tracking with geofencing and photo capture
-- **Parts Management**: Catalog, quotes, and purchase orders
-- **Document Signing**: Client signature capture and PDF generation
-- **QuickBooks Integration**: Sync customers, items, and invoices
-- **Role-Based Access**: Admin, Technician, and Client portals
-- **Public Portal**: Client access via secure public keys
+### **Work Order Management**
+- 5-step creation wizard (client, machine, service type, scheduling, parts)
+- Status tracking (pending → in_progress → done → archived)
+- Priority levels (low, normal, high) with visual indicators
+- Technician assignment and workload balancing
+- Estimated vs actual duration tracking
+
+### **Session Tracking**
+- Start/pause/resume/finish session controls
+- Geofencing with location verification
+- Photo capture and note-taking
+- Parts usage tracking during sessions
+- Automatic time calculations and reporting
+
+### **Parts & Inventory**
+- Searchable parts catalog with categories
+- Quote and purchase order generation
+- Client signature capture for approvals
+- Cost estimation and tracking
+- Integration with QuickBooks items
+
+### **Document Management**
+- PDF generation for quotes and purchase orders
+- Digital signature capture (react-native-signature-canvas)
+- Document preview (react-native-pdf on mobile, iframe on web)
+- Email sharing and download functionality
+- Public portal access for client signatures
+
+### **Calendar & Scheduling**
+- Agenda view with react-native-calendars
+- Drag-and-drop session rescheduling
+- Technician availability and workload view
+- Appointment reminders and notifications
+- Color-coded priority and status indicators
+
+## 🏗️ Project Structure
+
+\`\`\`
+app/
+├── (auth)/                 # Authentication screens
+│   ├── login.tsx          # 2-step OTP login
+│   └── register.tsx       # User registration
+├── (app)/                 # Main authenticated app
+│   ├── dashboard.tsx      # Role-based dashboard
+│   ├── calendar.tsx       # Agenda view with scheduling
+│   ├── customers.tsx      # Customer management
+│   ├── machines.tsx       # Machine catalog
+│   ├── technicians.tsx    # Technician management
+│   └── settings.tsx       # App configuration
+├── (work-orders)/         # Work order management
+│   ├── index.tsx          # Work order list with filters
+│   ├── new.tsx           # 5-step creation wizard
+│   └── [id].tsx          # Detailed work order view
+├── (sessions)/            # Session tracking
+│   └── index.tsx          # Active session controls
+└── (public)/              # Public client portal
+    └── [publicKey].tsx    # Secure client access
+
+components/
+├── ui/                    # Base UI components
+├── parts/                 # Parts management components
+└── DocumentPreview.tsx    # Cross-platform PDF viewer
+
+lib/
+├── supabase.ts           # Database client and auth
+├── quickbooks.ts         # QB integration service
+├── zod-schemas.ts        # Data validation schemas
+├── design-tokens.ts      # Accessibility and design system
+└── work-orders.ts        # Work order business logic
+\`\`\`
 
 ## 🏗️ Architecture
 
@@ -122,6 +211,9 @@ The app expects these QuickBooks integration endpoints to be deployed separately
 - **Database**: Supabase with Row Level Security
 - **Storage**: Supabase Storage for documents and images
 - **Integration**: QuickBooks Online API via serverless functions
+- **Authentication**: Supabase Auth with OTP-based login
+- **State Management**: React Context + Custom hooks
+- **Navigation**: Expo Router with role-based routing
 
 ## 📱 Development
 
@@ -133,7 +225,22 @@ expo start --web
 
 # Clear cache if needed
 expo start --clear
+
+# Type checking
+npm run type-check
+
+# Linting
+npm run lint
 \`\`\`
+
+## 🔒 Security Features
+
+- **Row Level Security (RLS)**: Database-level access control
+- **Role-based routing**: Different app sections per user type
+- **Public key access**: Secure client portal without authentication
+- **Token encryption**: Secure QuickBooks token storage
+- **Input validation**: Zod schemas for all forms
+- **HTTPS enforcement**: Secure communication in production
 
 ## 🚀 Production Checklist
 
@@ -143,3 +250,36 @@ expo start --clear
 - [ ] Test OAuth flows in production environment
 - [ ] Set up domain and SSL certificate
 - [ ] Configure push notifications (if needed)
+- [ ] Test all user roles and permissions
+- [ ] Verify document signing and PDF generation
+- [ ] Test mobile app builds (iOS/Android)
+- [ ] Set up monitoring and error tracking
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Metro bundler issues:**
+\`\`\`bash
+expo start --clear
+\`\`\`
+
+**Web build fails:**
+\`\`\`bash
+rm -rf dist/ .expo/
+npm run export:web
+\`\`\`
+
+**Supabase connection issues:**
+- Verify EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY
+- Check RLS policies are properly configured
+- Ensure user roles are set correctly in auth.users metadata
+
+**QuickBooks integration issues:**
+- Verify serverless endpoints are deployed and accessible
+- Check QB_CLIENT_ID and QB_CLIENT_SECRET are valid
+- Ensure redirect URI matches exactly in QB developer console
+
+## 📞 Support
+
+For technical support or feature requests, please create an issue in the repository or contact the development team.
